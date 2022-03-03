@@ -1,0 +1,53 @@
+version: '3.9'
+
+networks:
+  trinhapp:
+    driver: bridge
+
+services:
+  # MongoDB
+  database:
+    image: bitnami/mongodb:latest
+    container_name: trinhapp-database
+    restart: always
+    expose:
+      - "27017"
+    volumes:
+      - ./data:/binami/mongodb
+    environment:
+      MONGODB_ROOT_PASSWORD: trinhlien
+      MONGODB_USERNAME: maingoctrinh
+      MONGODB_PASSWORD: ngoclam
+      MONGODB_DATABASE: trinhapp
+    networks:
+      - trinhapp
+  # App server
+  server:
+    build: server
+    image: trinhapp-server
+    container_name: trinhapp-server
+    restart: always
+    volumes:
+      - ./server:/usr/src/server
+    expose:
+      - "1987"
+    networks:
+      - trinhapp
+    depends_on:
+      - database
+  # App Client
+  web:
+    build: web
+    image: trinhapp-web
+    container_name: trinhapp-web
+    restart: always
+    volumes:
+      - ./web/.next:/usr/src/web/.next
+      - ./web/.yarn:/usr/src/web/.yarn
+      - ./web/node_modules:/usr/src/web/node_modules
+    ports:
+      - "3000:3000"
+    networks:
+      - trinhapp
+    depends_on:
+      - server
